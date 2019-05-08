@@ -1,6 +1,7 @@
 import pandas as pd
 import sklearn
 import re
+import matplotlib.pyplot as plt
 import nltk
 
 nltk.download("averaged_perceptron_tagger")
@@ -16,7 +17,7 @@ def get_data(**kwargs):
     :param kwargs: passed as local environments may differ
     :return:
     """
-    path = "gs://svmclassifier2019-mlengine/data/sentiment140.csv"  # defaults
+    path = "data/sentiment140.csv"  # defaults
     col_names = ["target", "id", "date", "flag", "user", "text"]
     encoding = "ISO-8859-1"
     row_count = 1600000
@@ -67,7 +68,7 @@ def remove_user(_string):
     :param _string: str
     :return: str
     """
-    clean = re.sub(r"(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", " ", _string)
+    clean = re.sub(r"(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", "", _string)
     return clean
 
 
@@ -78,7 +79,7 @@ def remove_url(_string):
     """
     clean = re.sub(
         r"[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&=]*)\S*",
-        " ",
+        "",
         _string,
     )
     return clean
@@ -127,3 +128,26 @@ def add_pos(_string):
 
 def remove_ws(_string):
     return re.sub(r"\s+", " ", _string).strip()
+
+
+def plt_tweet_length(df):
+    df['pre_clean_len'] = [len(t) for t in df.text]
+
+    data_dict = {
+        'sentiment': {
+            'type': df.target.dtype,
+            'description': 'sentiment class - 0:negative, 1:positive'
+        },
+        'text': {
+            'type': df.text.dtype,
+            'description': 'tweet text'
+        },
+        'pre_clean_len': {
+            'type': df.pre_clean_len.dtype,
+            'description': 'Length of the tweet before cleaning'
+        },
+        'dataset_shape': df.shape
+    }
+    fig, ax = plt.subplots(figsize=(5, 5))
+    plt.boxplot(df.pre_clean_len)
+    plt.show()
