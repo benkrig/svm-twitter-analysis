@@ -2,7 +2,8 @@ import pandas as pd
 import sklearn
 import re
 import nltk
-nltk.download('averaged_perceptron_tagger')
+
+nltk.download("averaged_perceptron_tagger")
 from nltk.stem import snowball
 
 sn = snowball.SnowballStemmer("english")
@@ -42,7 +43,7 @@ def write_data(**kwargs):
     :param kwargs:
     :return:
     """
-    sklearn.externals.joblib.dump(kwargs["model"], 'data/model.pkl', compress=3)
+    sklearn.externals.joblib.dump(kwargs["model"], "data/model.pkl", compress=3)
 
 
 def clean_pre(df):
@@ -103,7 +104,7 @@ def remove_repeat(_string):
     :param _string: str
     :return: str
     """
-    clean = re.sub(r'(.)\1{2,}', r"\1", _string)
+    clean = re.sub(r"(.)\1{2,}", r"\1", _string)
     return clean
 
 
@@ -126,5 +127,3 @@ def add_pos(_string):
 
 def remove_ws(_string):
     return re.sub(r"\s+", " ", _string).strip()
-
-

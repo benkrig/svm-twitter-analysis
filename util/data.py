@@ -41,7 +41,7 @@ def write_data(**kwargs):
     :param kwargs:
     :return:
     """
-    sklearn.externals.joblib.dump(kwargs["model"], 'data/model.pkl', compress=3)
+    sklearn.externals.joblib.dump(kwargs["model"], "data/model.pkl", compress=3)
 
 
 def clean(df):
@@ -102,7 +102,7 @@ def remove_repeat(_string):
     :param _string: str
     :return: str
     """
-    clean = re.sub(r'(.)\1{2,}', r"\1", _string)
+    clean = re.sub(r"(.)\1{2,}", r"\1", _string)
     return clean
 
 

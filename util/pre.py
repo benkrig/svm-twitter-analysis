@@ -47,7 +47,7 @@ def remove_repeat(_string):
     :param _string: str
     :return: str
     """
-    clean = re.sub(r'(.)\1{2,}', r"\1", _string)
+    clean = re.sub(r"(.)\1{2,}", r"\1", _string)
     return clean
 
 
