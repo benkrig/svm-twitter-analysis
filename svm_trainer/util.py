@@ -2,11 +2,12 @@ import pandas as pd
 import sklearn
 import re
 import nltk
-
-nltk.download("averaged_perceptron_tagger")
 from nltk.stem import snowball
+from nltk.corpus import wordnet as wn
 
 sn = snowball.SnowballStemmer("english")
+
+lemmatizer = nltk.WordNetLemmatizer()
 
 
 def get_data(**kwargs):
@@ -16,7 +17,7 @@ def get_data(**kwargs):
     :param kwargs: passed as local environments may differ
     :return:
     """
-    path = "gs://svmclassifier2019-mlengine/data/sentiment140.csv"  # defaults
+    path = "data/stanford140.csv"  # defaults
     col_names = ["target", "id", "date", "flag", "user", "text"]
     encoding = "ISO-8859-1"
     row_count = 1600000
@@ -67,7 +68,7 @@ def remove_user(_string):
     :param _string: str
     :return: str
     """
-    clean = re.sub(r"(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", " ", _string)
+    clean = re.sub(r"(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", "  ", _string)
     return clean
 
 
@@ -78,7 +79,7 @@ def remove_url(_string):
     """
     clean = re.sub(
         r"[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&=]*)\S*",
-        " ",
+        "  ",
         _string,
     )
     return clean
@@ -87,7 +88,8 @@ def remove_url(_string):
 def remove_quotes(_string):
     clean = _string.replace('"', " ")
     clean = clean.replace("'", " ")
-    clean = clean.replace("amp", "and")
+    clean = clean.replace("amp", " ")
+    clean = clean.replace("&", " ")
     clean = clean.replace("quot", " ")
     clean = re.sub(r"[^\w\s]", "", clean)
     return clean
@@ -119,11 +121,27 @@ def add_pos(_string):
     pos = ""
     clean = ""
     for word in text_tagged:
-        clean += " " + sn.stem(word[0])
+        #clean += " " + sn.stem(word[0])
+        clean += " " + lemmatizer.lemmatize(word[0], get_wordnet_pos(word[1]))
 
         pos += " " + word[1]
     return clean + pos
 
 
 def remove_ws(_string):
-    return re.sub(r"\s+", " ", _string).strip()
+    clean = re.sub(r"\b\d+\b", "", _string)  # remove numbers in strings
+    return re.sub(r"\s+", " ", clean).strip()
+
+
+def get_wordnet_pos(treebank_tag):
+
+    if treebank_tag.startswith('J'):
+        return wn.ADJ
+    elif treebank_tag.startswith('V'):
+        return wn.VERB
+    elif treebank_tag.startswith('N'):
+        return wn.NOUN
+    elif treebank_tag.startswith('R'):
+        return wn.ADV
+    else:
+        return wn.NOUN
