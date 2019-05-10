@@ -15,7 +15,9 @@ These instructions will get you a copy of the project up and running on your loc
 You'll need Python 3.5+.
 You'll also need the Sentiment140 Dataset available at: http://help.sentiment140.com/for-students
 
-Save this dataset to svm_trainer/data/ as "stanford140.csv"
+You'll need to retriev ethe dataset from either the Google Drive or Stanford Link on that page. After downloading the data, there will be two (2) files present. We only care about the training.x.x.csv file. Ignore the manual.
+
+Rename and save this training dataset to svm_trainer/data/ as "stanford140.csv"
 
 Setup project as follows:
 ```
