@@ -72,9 +72,9 @@ if __name__ == "__main__":
     model.fit(X_train, y_train)
     y_pred = model.predict(X_test)
 
-    test123 = vectorized.transform(np.array(["I'm not sure if i like this"]))
+    test_prediction = vectorized.transform(np.array(["I'm not sure if i like this"]))
 
-    test_pred = model.predict(test123)
+    test_pred = model.predict(test_prediction)
 
     print(test_pred)
 
