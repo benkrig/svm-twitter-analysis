@@ -4,6 +4,7 @@ import re
 import nltk
 from nltk.stem import snowball
 from nltk.corpus import wordnet as wn
+nltk.download("wordnet")
 
 sn = snowball.SnowballStemmer("english")
 
