@@ -1,127 +1,55 @@
-import pandas as pd
-import sklearn
-import re
-import nltk
-from nltk.stem import snowball
-
-sn = snowball.SnowballStemmer("english")
+import matplotlib.pyplot as plt
+import itertools
+import numpy as np
 
 
-def get_data(**kwargs):
-    """Helper for automatically retrieving data.
-    Kwargs is present to allow different environments and data sets to be used.
+def plot_classification_report(
+    cls_report, title="Classification report", cmap="RdBu"
+):
 
-    :param kwargs: passed as local environments may differ
-    :return:
-    """
-    path = "data/sentiment140.csv"  # defaults
-    col_names = ["target", "id", "date", "flag", "user", "text"]
-    encoding = "ISO-8859-1"
-    row_count = 1600000
-    offset = 800000 - int(row_count / 2)
+    cls_report = cls_report.replace("\n\n", "\n")
+    cls_report = cls_report.replace(" / ", "/")
+    lines = cls_report.split("\n")
 
-    if "path" in kwargs:
-        path = kwargs["path"]
-    if "col_names" in kwargs:
-        col_names = kwargs["col_names"]
-    if "encoding" in kwargs:
-        encoding = kwargs["encoding"]
-    # noinspection SpellCheckingInspection
-    if "nrows" in kwargs:
-        row_count = kwargs["nrows"]
-        offset = 800000 - int(row_count / 2)
+    classes, plotMat, support, class_names = [], [], [], []
+    for line in lines[
+        1:3
+    ]:  # if you don't want avg/total result, then change [1:] into [1:-1]
+        t = line.strip().split()
+        if len(t) < 2:
+            continue
+        classes.append(t[0])
+        v = [float(x) for x in t[1 : len(t) - 1]]
+        support.append(int(t[-1]))
+        class_names.append(t[0])
+        plotMat.append(v)
 
-    return pd.read_csv(
-        path, encoding=encoding, skiprows=offset, nrows=row_count, names=col_names
-    )
+    plotMat = np.array(plotMat)
+    xticklabels = ["Precision", "Recall", "F1-score"]
+    yticklabels = [
+        "{0}".format(class_names[idx], sup) for idx, sup in enumerate(support)
+    ]
 
+    plt.imshow(plotMat, interpolation="nearest", cmap=cmap, aspect="auto")
+    plt.title(title)
+    plt.colorbar()
+    plt.xticks(np.arange(3), xticklabels, rotation=45)
+    plt.yticks(np.arange(len(classes)), yticklabels)
 
-def write_data(**kwargs):
-    """Write a trained model for later use
-    :param kwargs:
-    :return:
-    """
-    sklearn.externals.joblib.dump(kwargs["model"], "data/model.pkl", compress=3)
+    upper_thresh = plotMat.min() + (plotMat.max() - plotMat.min()) / 10 * 8
+    lower_thresh = plotMat.min() + (plotMat.max() - plotMat.min()) / 10 * 2
+    for i, j in itertools.product(range(plotMat.shape[0]), range(plotMat.shape[1])):
+        plt.text(
+            j,
+            i,
+            format(plotMat[i, j], ".2f"),
+            horizontalalignment="center",
+            color="white"
+            if (plotMat[i, j] > upper_thresh or plotMat[i, j] < lower_thresh)
+            else "black",
+        )
 
-
-def clean(df):
-    """Applies all methods from util.pre
-    :param df:
-    :return:
-    """
-    df["text"] = df["text"].apply(pre.remove_user)
-    df["text"] = df["text"].apply(pre.remove_url)
-    df["text"] = df["text"].apply(pre.remove_quotes)
-    df["text"] = df["text"].apply(pre.remove_ws)
-    df["text"] = df["text"].apply(pre.lower)
-    df["text"] = df["text"].apply(pre.remove_repeat)
-    df["text"] = df["text"].apply(pre.add_pos)
-
-    return df
-
-
-def remove_user(_string):
-    """Strips out user mentions from a string (@xyz)
-    :param _string: str
-    :return: str
-    """
-    clean = re.sub(r"(@[A-Za-z0-9]+)|([^0-9A-Za-z \t])|(\w+:\/\/\S+)", " ", _string)
-    return clean
-
-
-def remove_url(_string):
-    """Strips out url mentions from a string (http(s))
-    :param _string: str
-    :return: str
-    """
-    clean = re.sub(
-        r"[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&=]*)\S*",
-        " ",
-        _string,
-    )
-    return clean
-
-
-def remove_quotes(_string):
-    clean = _string.replace('"', " ")
-    clean = clean.replace("'", " ")
-    clean = clean.replace("amp", "and")
-    clean = clean.replace("quot", " ")
-    clean = re.sub(r"[^\w\s]", "", clean)
-    return clean
-
-
-def lower(_string):
-    clean = str(_string).lower()
-    return clean
-
-
-def remove_repeat(_string):
-    # noinspection SpellCheckingInspection
-    """Strips out repeated characters from a string (aaaaaabbbbbcccc -> abc)
-    :param _string: str
-    :return: str
-    """
-    clean = re.sub(r"(.)\1{2,}", r"\1", _string)
-    return clean
-
-
-def add_pos(_string):
-    """Adds part of speech (pos) to a string
-    :param _string: str
-    :return: str
-    """
-    text = _string.split()
-    text_tagged = nltk.pos_tag(text)  # [("original", "pos"), ...]
-
-    pos = ""
-    clean = ""
-    for word in text_tagged:
-        clean += " " + sn.stem(word[0])
-
-        pos += " " + word[1]
-    return clean + pos
-
-
-def remove_ws(_string):
-    return re.sub(r"\s+", " ", _string).strip()
+    plt.ylabel("Metrics")
+    plt.xlabel("Classes")
+    plt.tight_layout()
+    plt.show()
