@@ -13,7 +13,11 @@ These instructions will get you a copy of the project up and running on your loc
 ### Prerequisites
 
 You'll need Python 3.5+.
+You'll also need the Sentiment140 Dataset available at: http://help.sentiment140.com/for-students
 
+Save this dataset to svm_trainer/data/ as "stanford140.csv"
+
+Setup project as follows:
 ```
 #setup virtual environment
 virtualenv venv
